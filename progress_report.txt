@@ -1,0 +1,15 @@
+KilimoSmart Dynamic Progress Report
+
+--- Frontend (git@github.com:Khalil357/KilimoSmart.git) ---
+Total files: 0
+TODOs/FIXMEs: 0
+Git commits: 0
+Estimated Progress: 0%
+
+--- Backend (git@github.com:Khalil357/KilimoSmart-Back-end.git) ---
+Total files: 0
+TODOs/FIXMEs: 0
+Git commits: 0
+Estimated Progress: 0%
+
+Overall Project Progress: 0.0%

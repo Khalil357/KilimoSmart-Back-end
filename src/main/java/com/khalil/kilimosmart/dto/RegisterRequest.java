@@ -1,16 +1,18 @@
 package com.khalil.kilimosmart.dto;
 
+import com.khalil.kilimosmart.model.Role;
+
 public class RegisterRequest {
 
     private String username;
     private String email;
     private String password;
-    private String role; // Optional: you can assign default roles in the backend
+    private Role role; // Optional: you can assign default roles in the backend
 
     // Constructors
     public RegisterRequest() {}
 
-    public RegisterRequest(String username, String email, String password, String role) {
+    public RegisterRequest(String username, String email, String password, Role role) {
         this.username = username;
         this.email = email;
         this.password = password;
@@ -42,11 +44,11 @@ public class RegisterRequest {
         this.password = password;
     }
 
-    public String getRole() {
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 }

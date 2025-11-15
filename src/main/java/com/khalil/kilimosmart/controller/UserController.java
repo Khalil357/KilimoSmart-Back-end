@@ -8,9 +8,10 @@ import com.khalil.kilimosmart.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*") // Optional if testing with frontend locally
+@CrossOrigin(origins = "*")
 public class UserController {
 
     private final UserService userService;
