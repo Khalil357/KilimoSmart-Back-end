@@ -26,32 +26,45 @@ public class UserService {
         this.passwordEncoder = passwordEncoder;
     }
 
-    // =============================
-    // Public registration
-    // =============================
+    // Public registration (self-register as ROLE_USER)
     public ResponseEntity<AuthResponse> register(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest()
-                    .body(new AuthResponse("Email already exists"));
+            return ResponseEntity.badRequest().body(new AuthResponse("Email already exists"));
         }
 
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(Role.ROLE_USER); // always USER
+        user.setRole(Role.ROLE_USER);
 
         userRepository.save(user);
 
         String token = jwtService.generateToken(user);
-        return ResponseEntity.ok(
-                new AuthResponse("Registration successful", token, user.getUsername(), user.getRole())
-        );
+        return ResponseEntity.ok(new AuthResponse("Registration successful", token, user.getUsername(), user.getRole()));
     }
 
-    // =============================
-    // Admin creates user with role
-    // =============================
+    // Login
+    public ResponseEntity<AuthResponse> login(LoginRequest request) {
+        Optional<User> userOpt = userRepository.findByEmail(request.getEmail());
+
+        System.out.println("LOGIN DEBUG: input email=[" + request.getEmail() + "], password=["
+                + (request.getPassword() == null ? "null" : "PROVIDED") + "]");
+
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            boolean match = passwordEncoder.matches(request.getPassword(), user.getPassword());
+            System.out.println("LOGIN DEBUG: user found, password match=" + match);
+            if (match) {
+                String token = jwtService.generateToken(user);
+                return ResponseEntity.ok(new AuthResponse("Login successful", token, user.getUsername(), user.getRole()));
+            }
+        }
+
+        return ResponseEntity.status(401).body(new AuthResponse("Invalid credentials"));
+    }
+
+    // Admin creates user with a specific role
     public User createUserWithRole(RegisterRequest request) {
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
@@ -61,39 +74,13 @@ public class UserService {
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        // set role or fallback to USER
         user.setRole(request.getRole() != null ? request.getRole() : Role.ROLE_USER);
 
         return userRepository.save(user);
     }
 
-    // =============================
-    // Delete user (Admin only)
-    // =============================
     public void deleteUser(Long id) {
-        if (!userRepository.existsById(id)) {
-            throw new IllegalArgumentException("User not found");
-        }
+        if (!userRepository.existsById(id)) throw new IllegalArgumentException("User not found");
         userRepository.deleteById(id);
-    }
-
-    // =============================
-    // Login
-    // =============================
-    public ResponseEntity<AuthResponse> login(LoginRequest request) {
-        Optional<User> userOptional = userRepository.findByEmail(request.getEmail());
-
-        if (userOptional.isPresent()) {
-            User user = userOptional.get();
-            if (passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-                String token = jwtService.generateToken(user);
-                return ResponseEntity.ok(
-                        new AuthResponse("Login successful", token, user.getUsername(), user.getRole())
-                );
-            }
-        }
-
-        return ResponseEntity.status(401).body(new AuthResponse("Invalid credentials"));
     }
 }

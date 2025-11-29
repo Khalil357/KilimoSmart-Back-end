@@ -101,7 +101,16 @@
 			<scope>runtime</scope>
 			<optional>true</optional>
 		</dependency>
-	</dependencies>
+
+        <!-- Swagger>-->
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.1.0</version> <!-- pick latest -->
+        </dependency>
+
+
+    </dependencies>
 
 	<build>
 		<plugins>
