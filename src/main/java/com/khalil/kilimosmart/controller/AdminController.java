@@ -14,19 +14,23 @@ public class AdminController {
 
     private final UserService userService;
 
-    public AdminController(UserService userService) { this.userService = userService; }
-
-    @PostMapping("/users/create")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
-    public ResponseEntity<?> createUser(@RequestBody RegisterRequest request) {
-        User created = userService.createUserWithRole(request);
-        return ResponseEntity.ok("Created: " + created.getEmail() + " as " + created.getRole());
+    public AdminController(UserService userService) {
+        this.userService = userService;
     }
 
+    // ADMIN: Create user with specific ROLE
+    @PostMapping("/users/create")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> createUser(@RequestBody RegisterRequest request) {
+        User created = userService.createUserWithRole(request);
+        return ResponseEntity.ok("Created user: " + created.getEmail() + " with role " + created.getRole());
+    }
+
+    // ADMIN: Delete user by ID
     @DeleteMapping("/users/{id}")
-    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return ResponseEntity.ok("Deleted");
+        return ResponseEntity.ok("User deleted");
     }
 }
