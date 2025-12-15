@@ -1,8 +1,6 @@
 package com.khalil.kilimosmart.service;
 
-import com.khalil.kilimosmart.dto.AuthResponse;
-import com.khalil.kilimosmart.dto.LoginRequest;
-import com.khalil.kilimosmart.dto.RegisterRequest;
+import com.khalil.kilimosmart.dto.*;
 import com.khalil.kilimosmart.model.Role;
 import com.khalil.kilimosmart.model.User;
 import com.khalil.kilimosmart.repository.UserRepository;
@@ -11,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -70,17 +69,65 @@ public class UserService {
             throw new IllegalArgumentException("Email already exists");
         }
 
+        // Normalize role
+        Role role;
+        if (request.getRole() == null || request.getRole().isBlank()) {
+            role = Role.ROLE_USER; // default
+        } else {
+            try {
+                // Convert "farmer" → "ROLE_FARMER"
+                role = Role.valueOf("ROLE_" + request.getRole().toUpperCase());
+            } catch (IllegalArgumentException ex) {
+                throw new IllegalArgumentException("Invalid role: " + request.getRole());
+            }
+        }
+
         User user = new User();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(request.getRole() != null ? request.getRole() : Role.ROLE_USER);
+        user.setRole(role);  // ✅ assign the enum, not a string
 
         return userRepository.save(user);
     }
+
 
     public void deleteUser(Long id) {
         if (!userRepository.existsById(id)) throw new IllegalArgumentException("User not found");
         userRepository.deleteById(id);
     }
+
+    // Update profile
+    public User updateProfile(User currentUser, UpdateProfileRequest request) {
+
+        if (request.getEmail() != null && !request.getEmail().equals(currentUser.getEmail())) {
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                throw new IllegalArgumentException("Email already taken");
+            }
+            currentUser.setEmail(request.getEmail());
+        }
+
+        if (request.getUsername() != null) {
+            currentUser.setUsername(request.getUsername());
+        }
+
+        return userRepository.save(currentUser);
+    }
+
+    // Change password
+    public void changePassword(User currentUser, ChangePasswordRequest request) {
+        if (!passwordEncoder.matches(request.getOldPassword(), currentUser.getPassword())) {
+            throw new IllegalArgumentException("Old password is incorrect");
+        }
+
+        currentUser.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(currentUser);
+    }
+
+    public List<User> getAllUsers() {
+        return userRepository.findAll();
+    }
+
+
+
 }

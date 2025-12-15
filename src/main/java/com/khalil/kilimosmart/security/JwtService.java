@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.security.Key;
+import java.util.Collections;
 import java.util.Date;
 import java.util.function.Function;
 
@@ -28,6 +29,7 @@ public class JwtService {
         return Jwts.builder()
                 .setSubject(user.getEmail())
                 .claim("role", user.getRole().name())
+                .claim("authorities", Collections.singletonList(user.getRole().name()))   // ✅ ADD THIS
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
